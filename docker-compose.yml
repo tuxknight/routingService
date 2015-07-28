@@ -1,17 +1,17 @@
 agent1:
   image: agent
-  ports: 
-    - "6667:6667"
+  expose: 
+    - "6667"
   volumes:
     - ./agent.sh:/bin/agent.sh
   command: agent.sh --file /file.log
 
-#service1:
-#  image: service1
-#  ports: 
-#    - "6667:6667"
-#  links:
-#    - agent1:agent1
-#  volumes:
-#    - ./service1.sh:/bin/service2.sh
-#  command: service1.sh --dip agent1 --dport 6667
+service1:
+  image: service1
+  ports: 
+    - "6667:6667"
+  links:
+    - agent1:agent1
+  volumes:
+    - ./service1.sh:/bin/service1.sh
+  command: service1.sh --dip agent1 --dport 6667

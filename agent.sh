@@ -67,8 +67,7 @@ if [[ $file ]];then
     echo "checking file"
     check_file $file
 fi
-echo $file
-
+echo "listening $IP $port"
 if [[ $dip ]] && [[ $dport ]];then
   if [[ $file ]];then
     echo "redirecting to $dip $dport and $file"
@@ -83,7 +82,7 @@ else
   if [[ $file ]];then
     echo "redirecting to $file"
       #nc -lk $IP $port |  tee -a $file 
-      nc -l $IP $port |  tee -a $file 
+      nc -lkv $IP $port |  tee -a $file 
   else
     echo "no output specified"
   fi

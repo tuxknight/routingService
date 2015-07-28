@@ -53,9 +53,9 @@ do
 done
 
 check_file(){
-  file=$1
-  [ ! -f $file ] && echo "creating $file" && touch $file
-  [ ! -w $file ] && echo "$file not writable" && exit 1
+  f=$1
+  [ ! -f $f ] && echo "creating $f" && touch $f
+  [ ! -w $f ] && echo "$f not writable" && exit 1
 }
 
 # container's IP address
@@ -65,18 +65,18 @@ IP=`grep $HOSTNAME /etc/hosts|awk -F' ' '{print $1}'|tail -1`
 port=${port:=6667}
 
 if [[ $file ]];then
-    check_file
+    check_file $file
 fi
-
+echo "listening $IP $port"
 if [[ $dip ]] && [[ $dport ]];then
   if [[ $file ]];then
     echo "redirecting to $dip $dport and $file"
       #nc -lk $IP $port | tr [:lower:] [:upper:] | tee -a $file | nc $dip $dport
-      nc -l $IP $port | tr [:lower:] [:upper:] | tee -a $file | nc $dip $dport
+      nc -lk $IP $port | tr [:lower:] [:upper:] | tee -a $file | nc $dip $dport
   else
     echo "redirecting to $dip $dport"
       #nc -lk $IP $port | tr [:lower:] [:upper:] | nc $dip $dport
-      nc -l $IP $port | tr [:lower:] [:upper:] | nc $dip $dport
+      nc -lvk $IP $port | tr [:lower:] [:upper:] | nc $dip $dport
   fi
 else
   if [[ $file ]];then
