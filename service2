@@ -1,0 +1,4 @@
+FROM ubuntu
+COPY service2.sh /bin/service2.sh
+EXPOSE 6667
+CMD ["service2.sh"]

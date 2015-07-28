@@ -1,0 +1,4 @@
+FROM ubuntu
+COPY agent.sh /bin/agent.sh
+EXPOSE 6667
+CMD ["agent.sh"]
