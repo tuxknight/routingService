@@ -19,7 +19,7 @@ ARGS=`getopt -l port:,dip:,dport:,file: -- -- "$@"`
 #  exit 1
 #fi
 eval set -- "${ARGS}"
-
+echo $ARGS
 # parse options
 while true
 do
@@ -51,11 +51,10 @@ do
         ;;
      esac
 done
-
 check_file(){
-  file=$1
-  [ ! -f $file ] && echo "creating $file" && touch $file
-  [ ! -w $file ] && echo "$file not writable" && exit 1
+  f=$1
+  [ ! -f $f ] && echo "creating $e" && touch $f
+  [ ! -w $f ] && echo "$f not writable" && exit 1
 }
 
 # container's IP address
@@ -65,8 +64,10 @@ IP=`grep $HOSTNAME /etc/hosts|awk -F' ' '{print $1}'|tail -1`
 port=${port:=6667}
 
 if [[ $file ]];then
-    check_file
+    echo "checking file"
+    check_file $file
 fi
+echo $file
 
 if [[ $dip ]] && [[ $dport ]];then
   if [[ $file ]];then
