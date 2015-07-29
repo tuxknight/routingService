@@ -1,4 +1,0 @@
-FROM ubuntu
-COPY service1.sh /bin/service1.sh
-EXPOSE 6667
-CMD ["service1.sh"]
