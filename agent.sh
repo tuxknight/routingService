@@ -67,16 +67,17 @@ if [[ $file ]];then
     echo "checking file"
     check_file $file
 fi
+
 echo "listening $IP $port"
 if [[ $dip ]] && [[ $dport ]];then
   if [[ $file ]];then
     echo "redirecting to $dip $dport and $file"
       #nc -lk $IP $port |  tee -a $file | nc $dip $dport
-      nc -l $IP $port |  tee -a $file | nc $dip $dport
+      nc -lkv $IP $port |  tee -a $file | nc $dip $dport
   else
     echo "redirecting to $dip $dport"
       #nc -lk $IP $port |  nc $dip $dport
-      nc -l $IP $port |  nc $dip $dport
+      nc -lkv $IP $port |  nc $dip $dport
   fi
 else
   if [[ $file ]];then

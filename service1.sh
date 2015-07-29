@@ -62,27 +62,28 @@ check_file(){
 IP=`grep $HOSTNAME /etc/hosts|awk -F' ' '{print $1}'|tail -1`
 
 # default port 6667 if port not specified
-port=${port:=6667}
+port=${port:=6666}
 
 if [[ $file ]];then
     check_file $file
 fi
+
 echo "listening $IP $port"
 if [[ $dip ]] && [[ $dport ]];then
   if [[ $file ]];then
     echo "redirecting to $dip $dport and $file"
       #nc -lk $IP $port | tr [:lower:] [:upper:] | tee -a $file | nc $dip $dport
-      nc -lk $IP $port | tr [:lower:] [:upper:] | tee -a $file | nc $dip $dport
+      nc -lkv $IP $port | tr [:lower:] [:upper:] | tee -a $file | nc $dip $dport
   else
     echo "redirecting to $dip $dport"
       #nc -lk $IP $port | tr [:lower:] [:upper:] | nc $dip $dport
-      nc -lvk $IP $port | tr [:lower:] [:upper:] | nc $dip $dport
+      nc -lvk $IP $port | nc $dip $dport
   fi
 else
   if [[ $file ]];then
     echo "redirecting to $file"
       #nc -lk $IP $port | tr [:lower:] [:upper:] | tee -a $file 
-      nc -l $IP $port | tr [:lower:] [:upper:] | tee -a $file 
+      nc -lvk $IP $port | tr [:lower:] [:upper:] | tee -a $file 
   else
     echo "no output specified"
   fi
