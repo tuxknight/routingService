@@ -20,22 +20,25 @@ class InteractWithRouting:
 
 
 class BaseDealWith(InteractWithService,InteractWithRouting):
-
     def __init__(self, style):
-       print ' '
+        pass
 
 
 class DealWithFile(BaseDealWith):
-
-    def __init__(self,style):
+    def __init__(self, style):
+        pass
 
     def in(self):
+        pass
 
     def to_service(self):
+        pass
 
     def from_service(self):
+        pass
 
     def out(self):
+        pass
 
 
 class DealWithTCP(BaseDealWith):
