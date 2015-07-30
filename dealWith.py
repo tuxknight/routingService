@@ -1,20 +1,29 @@
+class InteractWithService:
+    def __init__(self)
+        pass
 
-class BaseDealWith:
+    def to_service(self):
+        pass
+
+    def from_service(self):
+        pass
+
+class InteractWithRouting:
+    def __init__(self,style):
+        pass
+
+    def in(self):
+        pass
+
+    def out(self):
+        pass
+
+
+class BaseDealWith(InteractWithService,InteractWithRouting):
 
     def __init__(self, style):
        print ' '
 
-    def in(self):
-       print ' '
-   
-    def to_service(self):
-       print ' '
-   
-    def from_service(self):
-       print ' '
-   
-    def out(self):
-       print ' '
 
 class DealWithFile(BaseDealWith):
 
@@ -31,6 +40,8 @@ class DealWithFile(BaseDealWith):
 
 class DealWithTCP(BaseDealWith):
 
+
 class DealWithHttp(BaseDealWith):
+
 
 class DealWithUDP(BaseDealWith):
