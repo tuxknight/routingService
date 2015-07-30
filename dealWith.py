@@ -1,12 +1,5 @@
-#!/usr/bin/env python
-#
-
-
-class BaseDealWith(object):
-    def __init__(self, style):
-        pass
-
-    def in(self):
+class InteractWithService:
+    def __init__(self)
         pass
 
     def to_service(self):
@@ -15,7 +8,19 @@ class BaseDealWith(object):
     def from_service(self):
         pass
 
+class InteractWithRouting:
+    def __init__(self,style):
+        pass
+
+    def in(self):
+        pass
+
     def out(self):
+        pass
+
+
+class BaseDealWith(InteractWithService,InteractWithRouting):
+    def __init__(self, style):
         pass
 
 
@@ -37,12 +42,9 @@ class DealWithFile(BaseDealWith):
 
 
 class DealWithTCP(BaseDealWith):
-    pass
 
 
 class DealWithHttp(BaseDealWith):
-    pass
 
 
 class DealWithUDP(BaseDealWith):
-    pass
