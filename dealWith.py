@@ -1,4 +1,4 @@
-class InteractWithService:
+class InteractWithService(object):
     def __init__(self)
         pass
 
@@ -8,7 +8,7 @@ class InteractWithService:
     def from_service(self):
         pass
 
-class InteractWithRouting:
+class InteractWithRouting(object):
     def __init__(self,style):
         pass
 
