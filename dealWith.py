@@ -1,4 +1,4 @@
-class InteractWithService:
+class InteractWithService(object):
     def __init__(self)
         pass
 
@@ -8,14 +8,14 @@ class InteractWithService:
     def from_service(self):
         pass
 
-class InteractWithRouting:
+class InteractWithRouting(object):
     def __init__(self,style):
         pass
 
-    def in(self):
+    def from_routing(self):
         pass
 
-    def out(self):
+    def to_routing(self):
         pass
 
 
@@ -28,7 +28,7 @@ class DealWithFile(BaseDealWith):
     def __init__(self, style):
         pass
 
-    def in(self):
+    def from_routing(self):
         pass
 
     def to_service(self):
@@ -37,7 +37,7 @@ class DealWithFile(BaseDealWith):
     def from_service(self):
         pass
 
-    def out(self):
+    def to_routing(self):
         pass
 
 
