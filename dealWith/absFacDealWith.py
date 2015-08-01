@@ -1,16 +1,8 @@
-class InteractWithRouting(object):
-    def __init__(self,style1,style2):
-	pass
-
-    def from_routing(self,style1):
-	pass
-
-    def to_routing(self,style2):
-	pass
+from interactWithRouting import InteractWithRouting
 
 
 class InteractWithService(object):
-    def __init__(self)
+    def __init__(self):
         pass
 
     def to_service(self):
@@ -20,22 +12,18 @@ class InteractWithService(object):
         pass
 
 
-class ServiceProduct(InteractWithRouting,InteractWithService):
+class Service(InteractWithRouting,InteractWithService):
     def __init__(self,style1,style2):
-        InteractWithRouting.__init__(self,style1,style2)
-	InteractWithService.__init__(self)
+ 	self.From_routing = InteractWithRouting(style1)
+	self.To_routing = InteractWithRouting(style2)
  	pass
 
+    def from_routing(self):
+        self.From_routing.from_routing()
+	pass
 
-class Service(ServiceProduct):
-    def __init__(self,style1,style2):
-        ServiceProduct.__init__(self,style1,style2)
-        pass
-
-    def from_routing(self,style1):
-        pass
-
-    def to_routing(self,style2):
+    def to_routing(self):
+	self.To_routing.to_routing()
         pass
 
     def to_service(self):
