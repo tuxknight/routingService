@@ -5,10 +5,10 @@ import os
 
 
 class PluginManager(object):
-    def __init__(self, name):
+    def __init__(self):
         """Load plugins for module name from plugins/input and plugins/output
         valid plugin files are end with .py and not start with _ """
-        self._name = name
+        #self._name = name
         self.plugins_list = []
         self.plugins = {}
         self.load_path = dict(input="plugins/input", output="plugins/output")
