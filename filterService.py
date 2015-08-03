@@ -33,11 +33,11 @@ class FilterService(BaseService):
                 sleep(10)
 
     def _receive(self):
-        #print("handshake...")
-        #self.sock.send(self.name)
+        print("handshake...")
+        self.sock.send(self.name)
         while True:
             print("receiving data...")
-            data = self.sock.recv(8)
+            data = self.sock.recv(1024)
             print("data: %s" %data)
             #if not data: break
             self.raw_data = self.raw_data + data

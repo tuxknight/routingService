@@ -25,26 +25,23 @@ class InteractWithService(object):
     def start(self):
         self._get_connection(5)
         conn_status = ""
-        while True:
-            connection, address = self.portal_server.accept()
-            #handshake = connection.recv(1024)
-            #print("handshake %s" %handshake)
-            #if handshake.startswith(self.service):
-            if True:
-                conn_state = 1
-                #connection.send("START DATA\n\n")
-                #connection.sendall(self.raw_data)
-                #connection.send("END DATA\n\n")
-                connection.send(self.raw_data)
-                print("Start to receive results")
+        connection, address = self.portal_server.accept()
+        handshake = connection.recv(1024)
+        print("handshake %s" %handshake)
+        if handshake.startswith(self.service):
+            """handshake succeed"""
+            conn_state = 1
+            #connection.send("START DATA\n\n")
+            connection.sendall(self.raw_data)
+            #connection.send("END DATA\n\n")
+            print("Start to receive results")
+            while True:
                 result_data = connection.recv(2048)
-                #if not result_data: break
+                if not result_data: break
                 self.result = self.result + result_data
-                break
-            else:
-                print("No service matched to %s" %self.service)
-                conn_status = -1
-                break
+        else:
+            print("No service matched to %s" %self.service)
+            conn_status = -1
         return conn_status
 
     def exchange(self):
