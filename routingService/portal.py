@@ -5,14 +5,16 @@ from pluginLoader import PluginManager
 from service import InteractWithService
 
 class Portal(object):
-"""Portal receives data from router, sends to service and then
+    """Portal receives data from router, sends to service and then
 receives results from service, sends results to router.
 Portal interact with service using unix socket while interacting
-with router through input and output plugins."""
+with router through input and output plugins.
+"""
     def __init__(self, input, output, service_name):
-        """input: input plugin name to load"""
-        """output: output plugin name to load"""
-        """service_name: service name which Portal interact with"""
+        """input: input plugin name to load
+            output: output plugin name to load
+            service_name: service name which Portal interact with
+        """
         self.manager = PluginManager()
         self.input = self.manager.get_plugin(input)()
         self.output = self.manager.get_plugin(output)()

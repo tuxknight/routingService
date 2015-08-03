@@ -24,9 +24,13 @@ class FilterService(BaseService):
         while True:
             if os.path.exists(self.sock_file):
                 self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                self.sock.connect(self.sock_file)
-                print("connecting to %s" %self.sock_file)
-                break
+                try:
+                    self.sock.connect(self.sock_file)
+                    print("connecting to %s" %self.sock_file)
+                    break
+                except socket.error as e:
+                    print("Connection Failed(%s), waiting..." %e)
+                    sleep(10)
             else:
                 #raise Exception("Unix socket file %s not found." %self.sock_file)
                 print("Unix socket file %s not found. Waiting for sockets..." %self.sock_file)
