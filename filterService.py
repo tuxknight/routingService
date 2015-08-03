@@ -2,31 +2,46 @@
 # -*- coding: utf-8 -*-
 
 import socket
+import os
+from time import sleep
 
 class BaseService(object):
     def __init__(self, sock_file="/var/run/exchange.sock"):
         self.sock_file = sock_file
-        self.sock = socket.socket(socket.AF_UNSPEC, socket.SOCK_STREAM)
-        self.raw_data = ""
-        self.result = ""
 
 
 class FilterService(BaseService):
     def __init__(self):
         super(FilterService, self).__init__()
         self.name = "filter"
+        self.raw_data = ""
+        self.result = ""
 
     def _connect(self, stop=False):
-        self.conn = self.sock.connect(self.sock_file)
         if stop:
-            self.conn.close()
+            self.sock.close()
+            return 0
+        while True:
+            if os.path.exists(self.sock_file):
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.connect(self.sock_file)
+                print("connecting to %s" %self.sock_file)
+                break
+            else:
+                #raise Exception("Unix socket file %s not found." %self.sock_file)
+                print("Unix socket file %s not found. Waiting for sockets..." %self.sock_file)
+                sleep(10)
 
     def _receive(self):
-        self.conn.send(self.name)
+        #print("handshake...")
+        #self.sock.send(self.name)
         while True:
-            data = self.conn.recv(2048)
-            if not data: break
+            print("receiving data...")
+            data = self.sock.recv(8)
+            print("data: %s" %data)
+            #if not data: break
             self.raw_data = self.raw_data + data
+            break
 
     def _worker(self):
         if self.raw_data:
@@ -37,7 +52,7 @@ class FilterService(BaseService):
 
     def _send(self):
         if self.result:
-            self.conn.sendall(self.result)
+            self.sock.sendall(self.result)
 
     def perform(self):
         self._connect()
@@ -53,4 +68,3 @@ class FilterService(BaseService):
 if __name__ == "__main__":
     service = FilterService()
     service.perform()
-

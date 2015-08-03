@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from routingService.plugins.output import BaseOutput
+from . import BaseOutput
 
 
 class HttpOutput(BaseOutput):

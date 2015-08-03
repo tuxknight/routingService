@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from routingService.plugins.input import BaseInput
+#from routingService.plugins.input import BaseInput
+from . import BaseInput
 
 
 class FileIn(BaseInput):

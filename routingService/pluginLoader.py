@@ -30,7 +30,8 @@ class PluginManager(object):
         """get a instance of plugin_name if the plugin is available"""
         if plugin_name in self.plugins_list:
             if not self.plugins.has_key(plugin_name):
-                plugin = __import__(self._name + "." + plugin_name, fromlist=[self._name + "." + plugin_name])
+                plugin = __import__(plugin_name, fromlist=[plugin_name])
+                #plugin = __import__(self._name + "." + plugin_name, fromlist=[self._name + "." + plugin_name])
                 self.plugins[plugin_name] = plugin.inject_plugin()
 
     def get_plugin(self, plugin_name):
@@ -38,10 +39,7 @@ class PluginManager(object):
         if self.plugins.has_key(plugin_name):
             return self.plugins[plugin_name]
         else:
-            try:
-                self.load_plugin(plugin_name)
-            except ImportError as e:
-                print("Plugin: import %s failed. (%s %s)" %(plugin_name, e.args, e.message))
+            self.load_plugin(plugin_name)
             return self.plugins[plugin_name]
 
 
