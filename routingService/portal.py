@@ -28,7 +28,7 @@ with router through input and output plugins.
 
     def to_service(self):
         """creates a server to interact with service and exchange data"""
-        self.exchange = InteractWithService("/var/run/exchange.sock", "filter", self.stream_in)
+        self.exchange = InteractWithService("/var/run/exchange.sock", self.service_name, self.stream_in)
 
     def from_service(self):
         """receive result data from service"""

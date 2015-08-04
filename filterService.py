@@ -4,6 +4,7 @@
 import socket
 import os
 from time import sleep
+from threading import Thread
 
 class BaseService(object):
     def __init__(self, sock_file="/var/run/exchange.sock"):
@@ -42,7 +43,6 @@ class FilterService(BaseService):
         while True:
             print("receiving data...")
             data = self.sock.recv(1024)
-            print("data: %s" %data)
             #if not data: break
             self.raw_data = self.raw_data + data
             break

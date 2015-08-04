@@ -9,10 +9,8 @@ Session.vim
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-
 # C extensions
 *.so
-
 # Distribution / packaging
 .Python
 env/
@@ -63,3 +61,4 @@ docs/_build/
 
 # PyBuilder
 target/
+output.txt
