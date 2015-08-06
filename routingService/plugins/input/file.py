@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#from routingService.plugins.input import BaseInput
+
 from . import BaseInput
 from subprocess import PIPE
 from subprocess import Popen
@@ -16,8 +16,9 @@ class FileIn(BaseInput):
         return self.read("/var/log/syslog", 5)
 
     def read(self, filename, lines):
-        return Popen(["tail", "-n%d" %lines, filename],
-                          stdout=PIPE).communicate()[0]
+        return Popen(["tail", "-n%d" % lines, filename],
+                     stdout=PIPE).communicate()[0]
+
 
 def inject_plugin():
     return FileIn

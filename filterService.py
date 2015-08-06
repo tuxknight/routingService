@@ -3,72 +3,88 @@
 
 import socket
 import os
+import multiprocessing
 from time import sleep
 
-class BaseService(object):
-    def __init__(self, sock_file="/var/run/exchange.sock"):
-        self.sock_file = sock_file
 
-
-class FilterService(BaseService):
-    def __init__(self):
+class FilterService(multiprocessing.Process):
+    def __init__(self, sock_file, pipe):
         super(FilterService, self).__init__()
-        self.name = "filter"
         self.raw_data = ""
         self.result = ""
+        self.bufsize = 1024
+        self.sock_file = sock_file
+        self.pipe = pipe
 
-    def _connect(self, stop=False):
-        if stop:
-            self.sock.close()
-            return 0
+    def _connect(self, sock_file):
         while True:
-            if os.path.exists(self.sock_file):
+            if os.path.exists(sock_file):
                 self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 try:
-                    self.sock.connect(self.sock_file)
-                    print("connecting to %s" %self.sock_file)
+                    self.sock.connect(sock_file)
+                    print("connecting to %s" % sock_file)
                     break
                 except socket.error as e:
                     print("Connection Failed(%s), waiting..." %e)
                     sleep(10)
             else:
-                #raise Exception("Unix socket file %s not found." %self.sock_file)
-                print("Unix socket file %s not found. Waiting for sockets..." %self.sock_file)
+                print("Unix socket file %s not found. Waiting for sockets..." % sock_file)
                 sleep(10)
 
     def _receive(self):
-        print("handshake...")
-        self.sock.send(self.name)
-        while True:
-            print("receiving data...")
-            data = self.sock.recv(1024)
-            print("data: %s" %data)
-            #if not data: break
+        size = self.sock.recv(1024)
+        print("raw data size: %s" % size)
+        self.sock.sendall("start")
+        size = int(size)
+        for x in range(size//self.bufsize):
+            """if size little than self.bufsize, this will not run"""
+            data = self.sock.recv(self.bufsize)
             self.raw_data = self.raw_data + data
-            break
+            size -= self.bufsize
+        self.raw_data = self.raw_data + self.sock.recv(size)
 
-    def _worker(self):
+    def _valve(self):
         if self.raw_data:
-            self.result = self.raw_data.upper()
-            return 1
-        else:
-            return -1
+            self.pipe.send(self.raw_data)
+            try:
+                self.result = self.pipe.recv()
+            except EOFError as e:
+                print("Pipe error(%s)" % e.message)
+            finally:
+                self.pipe.close()
 
     def _send(self):
         if self.result:
+            print("sending result...")
             self.sock.sendall(self.result)
+            self.sock.close()
 
-    def perform(self):
-        self._connect()
+    def run(self):
+        self._connect(self.sock_file)
         self._receive()
-        status = self._worker()
-        if status < 0:
-            print("Empty data!")
-            return -1
+        self._valve()
         self._send()
-        self._connect(stop=True)
 
+
+class Worker(multiprocessing.Process):
+    def __init__(self, pipe):
+        super(Worker, self).__init__()
+        self.pipe = pipe
+
+    def run(self):
+        raw_data = self.pipe.recv()
+        self.pipe.send(raw_data.upper())
+        self.pipe.close()
 
 if __name__ == "__main__":
-    service = FilterService()
-    service.perform()
+    # data_queue = multiprocessing.Queue(200)
+    while True:
+    # TODO: move socket.connect outside of FilterService, so the main loop
+    #   could be blocked by socket waiting connections
+        (socket_client, worker_pipe) = multiprocessing.Pipe(duplex=True)
+        service = FilterService("/var/run/exchange.sock", socket_client)
+        worker = Worker(worker_pipe)
+        service.start()
+        worker.start()
+        sleep(2)
+
