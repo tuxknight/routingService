@@ -9,28 +9,13 @@ from threading import Thread
 
 
 class FilterService(multiprocessing.Process):
-    def __init__(self, sock_file, pipe):
+    def __init__(self,connection, pipe):
         super(FilterService, self).__init__()
         self.raw_data = ""
         self.result = ""
         self.bufsize = 1024
-        self.sock_file = sock_file
+        self.connection = connection
         self.pipe = pipe
-
-    def _connect(self, sock_file):
-        while True:
-            if os.path.exists(sock_file):
-                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                try:
-                    self.sock.connect(sock_file)
-                    print("connecting to %s" % sock_file)
-                    break
-                except socket.error as e:
-                    print("Connection Failed(%s), waiting..." %e)
-                    sleep(10)
-            else:
-                print("Unix socket file %s not found. Waiting for sockets..." % sock_file)
-                sleep(10)
 
     def _receive(self):
         size = self.sock.recv(1024)
@@ -78,14 +63,26 @@ class Worker(multiprocessing.Process):
         self.pipe.close()
 
 if __name__ == "__main__":
-    # data_queue = multiprocessing.Queue(200)
+    def get_connection(sockfile):
+        while True:
+            if os.path.exists(sockfile):
+                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                try:
+                    sock.connect(sockfile)
+                    print("connecting to %s" % sockfile)
+                    return sock
+                except socket.error as e:
+                    print("Connection Failed(%s), waiting..." %e)
+                    sleep(10)
+            else:
+                print("Unix socket file %s not found. Waiting for sockets..." % sockfile)
+                sleep(10)
+
+    sock_file = "/var/run/exchange.sock"
     while True:
-    # TODO: move socket.connect outside of FilterService, so the main loop
-    #   could be blocked by socket waiting connections
-        (socket_client, worker_pipe) = multiprocessing.Pipe(duplex=True)
-        service = FilterService("/var/run/exchange.sock", socket_client)
+        conn = get_connection(sock_file)
+        (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
+        service = FilterService(conn, client_pipe)
         worker = Worker(worker_pipe)
         service.start()
         worker.start()
-        sleep(2)
-
