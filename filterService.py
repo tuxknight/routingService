@@ -5,7 +5,6 @@ import socket
 import os
 import multiprocessing
 from time import sleep
-from threading import Thread
 
 
 class FilterService(multiprocessing.Process):
@@ -14,8 +13,9 @@ class FilterService(multiprocessing.Process):
         self.raw_data = ""
         self.result = ""
         self.bufsize = 1024
-        self.connection = connection
+        self.sock= connection
         self.pipe = pipe
+        self.status = 0
 
     def _receive(self):
         size = self.sock.recv(1024)
@@ -42,12 +42,19 @@ class FilterService(multiprocessing.Process):
     def _send(self):
         if self.result:
             print("sending result...")
-            self.sock.sendall(self.result)
+            data_size = len(self.result)
+            self.sock.sendall(str(data_size))
+            response = self.sock.recv(1024)
+            if response == "start":
+                self.sock.sendall(self.result)
             self.sock.close()
 
     def run(self):
-        self._connect(self.sock_file)
-        self._receive()
+        try:
+            self._receive()
+        except socket.error as e:
+            self.status = -1
+            return 
         self._valve()
         self._send()
 
@@ -84,5 +91,9 @@ if __name__ == "__main__":
         (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
         service = FilterService(conn, client_pipe)
         worker = Worker(worker_pipe)
+        service.daemon = True
+        worker.daemon = True
         service.start()
         worker.start()
+        worker.join()
+        service.join()

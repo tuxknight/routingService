@@ -28,13 +28,16 @@ class InteractWithService:
         connection.sendall(str(buf_size))
         response = connection.recv(1024)
         if response == "start":
-            print("recieving...")
             connection.sendall(self.raw_data)
-            while True:
+            result_size = connection.recv(1024)
+            result_size = int(result_size)
+            connection.sendall("start")
+            print("recieving...")
+            for x in range(result_size//self.buf):
                 data = connection.recv(self.buf)
-                if not data:
-                    break
                 self.result = self.result + data
+                result_size -= self.buf
+            self.result = self.result + connection.recv(result_size)
 
     def exchange(self):
         self.start()
