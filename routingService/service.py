@@ -3,6 +3,7 @@
 
 import socket
 import os
+import logger
 
 
 class InteractWithService:
@@ -32,7 +33,7 @@ class InteractWithService:
             result_size = connection.recv(1024)
             result_size = int(result_size)
             connection.sendall("start")
-            print("recieving...")
+            logger.drs_log.debug("receiving...")
             for x in range(result_size//self.buf):
                 data = connection.recv(self.buf)
                 self.result = self.result + data

@@ -8,7 +8,6 @@ class PluginManager(object):
     def __init__(self):
         """Load plugins for module name from plugins/input and plugins/output
         valid plugin files are end with .py and not start with _ """
-        #self._name = name
         self.plugins_list = []
         self.plugins = {}
         self.load_path = dict(input="plugins/input", output="plugins/output")
@@ -31,7 +30,6 @@ class PluginManager(object):
         if plugin_name in self.plugins_list:
             if not self.plugins.has_key(plugin_name):
                 plugin = __import__(plugin_name, fromlist=[plugin_name])
-                #plugin = __import__(self._name + "." + plugin_name, fromlist=[self._name + "." + plugin_name])
                 self.plugins[plugin_name] = plugin.inject_plugin()
 
     def get_plugin(self, plugin_name):

@@ -5,14 +5,14 @@
 from . import BaseInput
 from subprocess import PIPE
 from subprocess import Popen
+import logger
 
 
 class FileIn(BaseInput):
     def run(self):
         """deal with input type: file
         return data"""
-        print("plugin: input/file")
-        print("reading files from routing service")
+        logger.drs_log.debug("plugin:input/file")
         return self.read("/var/log/syslog", 5)
 
     def read(self, filename, lines):
