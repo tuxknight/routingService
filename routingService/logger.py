@@ -6,7 +6,7 @@ import logging.handlers
 import sys
 
 LOG_FILE = "/tmp/drs.log"
-fmt = "%(name)s %(levelname)s %(asctime)s [ %(module)s:%(funcName)s ] %(message)s"
+fmt = "%(name)s %(levelname)s %(asctime)s [ %(module)s(%(process)s):%(lineno)s:%(funcName)s ] %(message)s"
 formatter = logging.Formatter(fmt)
 rotation_handler = logging.handlers.RotatingFileHandler(LOG_FILE,
                                                         maxBytes=1024*1024,

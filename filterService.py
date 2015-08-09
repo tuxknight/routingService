@@ -4,6 +4,7 @@
 import socket
 import os
 import multiprocessing
+import hashlib
 from time import sleep
 from routingService import logger
 
@@ -11,6 +12,7 @@ from routingService import logger
 class FilterService(multiprocessing.Process):
     def __init__(self, connection, pipe):
         super(FilterService, self).__init__()
+        logger.drs_log.debug("FilterService start")
         self.raw_data = ""
         self.result = ""
         self.bufsize = 1024
@@ -19,6 +21,7 @@ class FilterService(multiprocessing.Process):
         self.status = 0
 
     def _receive(self):
+        logger.drs_log.debug("(%s,%d)" % self.sock.getsockname())
         size = self.sock.recv(1024)
         logger.drs_log.debug("raw data size: %s" % size)
         self.sock.sendall("start")
@@ -32,12 +35,15 @@ class FilterService(multiprocessing.Process):
 
     def _valve(self):
         if self.raw_data:
+            logger.drs_log.debug("write to pipe")
             self.pipe.send(self.raw_data)
             try:
+                logger.drs_log.debug("try recv from pipe")
                 self.result = self.pipe.recv()
             except EOFError as e:
-                logger.drs_log.debug("Pipe error(%s)" % e.message)
+                logger.drs_log.warn("Pipe error(%s)" % e.message)
             finally:
+                logger.drs_log.debug("Pipe close")
                 self.pipe.close()
 
     def _send(self):
@@ -63,21 +69,30 @@ class FilterService(multiprocessing.Process):
 class Worker(multiprocessing.Process):
     def __init__(self, pipe):
         super(Worker, self).__init__()
+        logger.drs_log.debug("Worker start")
         self.pipe = pipe
+        self.md5sum = hashlib.md5()
 
     def run(self):
-        raw_data = self.pipe.recv()
-        self.pipe.send(raw_data.upper())
-        self.pipe.close()
+        logger.drs_log.debug("worker receive from pipe")
+        try:
+            raw_data = self.pipe.recv()
+            logger.drs_log.debug("worker calculating...")
+            self.md5sum.update(raw_data)
+            self.pipe.send(self.md5sum.hexdigest())
+        except EOFError as e:
+            logger.drs_log.warn("pipe error(%s)" % e.message)
+        finally:
+            self.pipe.close()
 
 if __name__ == "__main__":
     def get_connection(sockfile):
         while True:
-            if os.path.exists(sockfile):
-                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            #if os.path.exists(sockfile):
+            if True:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 try:
                     sock.connect(sockfile)
-                    logger.drs_log.debug("connecting to %s" % sockfile)
                     return sock
                 except socket.error as e:
                     logger.drs_log.debug("Connection Failed(%s), waiting..." %e)
@@ -86,7 +101,8 @@ if __name__ == "__main__":
                 logger.drs_log.debug("Unix socket file %s not found. Waiting for sockets..." % sockfile)
                 sleep(10)
 
-    sock_file = "/tmp/exchange.sock"
+    # sock_file = "/tmp/exchange.sock"
+    sock_file = ("127.0.0.1", 6003)
     while True:
         conn = get_connection(sock_file)
         (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
@@ -95,6 +111,8 @@ if __name__ == "__main__":
         service.daemon = True
         worker.daemon = True
         service.start()
+        logger.drs_log.debug("Service process id:%s" % service.ident)
         worker.start()
+        logger.drs_log.debug("Worker process id:%s" % worker.ident)
         worker.join()
         service.join()
