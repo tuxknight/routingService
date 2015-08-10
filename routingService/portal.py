@@ -16,7 +16,7 @@ receives results from service, sends results to router.
 Portal interact with service using unix socket while interacting
 with router through input and output plugins.
 """
-    def __init__(self, plugin_input, plugin_output, service_name, sock, max_conns):
+    def __init__(self, plugin_input, plugin_output, plugin_exchange, sock, max_conns):
         """input: input plugin name to load
             output: output plugin name to load
             service_name: service name which Portal interact with
@@ -24,7 +24,7 @@ with router through input and output plugins.
         self.manager = PluginManager()
         self.input = self.manager.get_plugin(plugin_input)()
         self.output = self.manager.get_plugin(plugin_output)()
-        self.service_name = service_name
+        self.exchanger = self.manager.get_plugin(plugin_exchange)()
         self.portal_server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         #self.portal_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_file = sock
@@ -36,7 +36,7 @@ with router through input and output plugins.
         self.portal_server.listen(self.max_conns)
 
     def run(self):
-        x = 30
+        x = 3
         while x >= 1:
             connection, address = self.portal_server.accept()
             stream_in = self.input.run()
@@ -60,6 +60,6 @@ with router through input and output plugins.
             self.output.run(stream_out)
 
 
-p = Portal("plugins.input.file", "plugins.output.file", "filter", "/tmp/exchange.sock", 50)
-#p = Portal("plugins.input.file", "plugins.output.file", "filter", ("127.0.0.1", 6003), 50)
+p = Portal("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket", "/tmp/exchange.sock", 50)
+#p = Portal("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket", ("127.0.0.1", 6003), 50)
 p.run()

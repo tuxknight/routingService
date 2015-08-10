@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-class BaseOutput:
+class BaseExchange(object):
     def __init__(self):
         pass
+

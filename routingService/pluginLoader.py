@@ -10,9 +10,10 @@ class PluginManager(object):
         valid plugin files are end with .py and not start with _ """
         self.plugins_list = []
         self.plugins = {}
-        self.load_path = dict(input="plugins/input", output="plugins/output")
+        self.load_path = dict(input="plugins/input", output="plugins/output", exchange="plugins/exchange")
         self.install_plugins("input")
         self.install_plugins("output")
+        self.install_plugins("exchange")
 
     def install_plugins(self, mod):
         """checkout the names of all available plugins
