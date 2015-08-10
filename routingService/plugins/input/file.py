@@ -9,11 +9,16 @@ import logger
 
 
 class FileIn(BaseInput):
-    def run(self):
+    def __init__(self):
+        super(FileIn, self).__init__()
+        logger.drs_log.debug("plugin:input/file")
+
+    def run(self, filename, lines):
         """deal with input type: file
         return data"""
-        logger.drs_log.debug("plugin:input/file")
-        return self.read("/var/log/syslog", 5)
+        self.filename = filename
+        self.lines = lines
+        return self.read(self.filename, self.lines)
 
     def read(self, filename, lines):
         return Popen(["tail", "-n%d" % lines, filename],

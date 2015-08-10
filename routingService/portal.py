@@ -6,7 +6,6 @@ import os
 import select
 import multiprocessing
 from pluginLoader import PluginManager
-from service import InteractWithService
 import logger
 
 
@@ -16,7 +15,7 @@ receives results from service, sends results to router.
 Portal interact with service using unix socket while interacting
 with router through input and output plugins.
 """
-    def __init__(self, plugin_input, plugin_output, plugin_exchange, sock, max_conns):
+    def __init__(self, plugin_input, plugin_output, plugin_exchange):
         """input: input plugin name to load
             output: output plugin name to load
             service_name: service name which Portal interact with
@@ -24,42 +23,19 @@ with router through input and output plugins.
         self.manager = PluginManager()
         self.input = self.manager.get_plugin(plugin_input)()
         self.output = self.manager.get_plugin(plugin_output)()
-        self.exchanger = self.manager.get_plugin(plugin_exchange)()
-        self.portal_server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        #self.portal_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock_file = sock
-        self.max_conns = max_conns
-        if os.path.exists(self.sock_file):
-            os.unlink(self.sock_file)
-        #self.portal_server.setblocking(0)
-        self.portal_server.bind(self.sock_file)
-        self.portal_server.listen(self.max_conns)
+        self.exchanger = self.manager.get_plugin(plugin_exchange)(sock="/tmp/exchange.sock", max_conns=5)
 
-    def run(self):
-        x = 3
-        while x >= 1:
-            connection, address = self.portal_server.accept()
-            stream_in = self.input.run()
-            logger.drs_log.debug("read data: %d" % len(stream_in))
-            logger.drs_log.debug("new connection accepted")
-#            logger.drs_log.debug("remote addr:(%s,%d)" % connection.getpeername())
-            client = multiprocessing.Process(target=self.exchange, args=(connection, stream_in))
-            client.daemon = True
-            client.start()
-            logger.drs_log.debug("Portal thread:%s" % client.ident)
-            client.join()
-            connection.shutdown(2)
-            connection.close()
-            x -= 1
-
-    def exchange(self, connection, stream_in):
-            logger.drs_log.info("Start data exchange")
-            exchange = InteractWithService(connection, stream_in, buffer_size=1024)
-            stream_out = exchange.exchange()
-            logger.drs_log.info("Finish data exchange.")
+    def start(self):
+        flist = ("/var/log/syslog", "/var/log/auth.log", "/var/log/kern.log")
+        loop = len(flist)
+        while loop>=1:
+            logger.drs_log.debug("loop %d" % loop)
+            stream_in = self.input.run(flist[loop-1], loop)
+            stream_out = self.exchanger.run(stream_in)
             self.output.run(stream_out)
+            logger.drs_log.debug("result %s\n" % stream_out)
+            loop -= 1
 
 
-p = Portal("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket", "/tmp/exchange.sock", 50)
-#p = Portal("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket", ("127.0.0.1", 6003), 50)
-p.run()
+p = Portal("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket")
+p.start()

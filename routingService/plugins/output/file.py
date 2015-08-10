@@ -5,10 +5,13 @@ import logger
 
 
 class FileOutput(BaseOutput):
+    def __init__(self):
+        super(FileOutput, self).__init__()
+        logger.drs_log.debug("plugin: output/FileOutput")
+
     def run(self, data):
         """deal with output type: File
         send data"""
-        logger.drs_log.debug("plugin: output/FileOutput")
         self.write("output.txt", data)
 
     def write(self, filename, content):
