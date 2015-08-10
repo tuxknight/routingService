@@ -36,7 +36,7 @@ with router through input and output plugins.
         self.portal_server.listen(self.max_conns)
 
     def run(self):
-        x = 300
+        x = 3
         while x >= 1:
             inputs, outputs, excepts = select.select(
                 [self.portal_server], [], [self.portal_server])
