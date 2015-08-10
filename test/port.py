@@ -5,6 +5,7 @@ import socket
 import os
 import select
 import multiprocessing
+from time import sleep
 from pluginLoader import PluginManager
 from service import InteractWithService
 import logger
@@ -25,24 +26,39 @@ with router through input and output plugins.
         self.input = self.manager.get_plugin(plugin_input)()
         self.output = self.manager.get_plugin(plugin_output)()
         self.service_name = service_name
-        self.portal_server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        # self.portal_server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         #self.portal_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_file = sock
-        self.max_conns = max_conns
-        if os.path.exists(self.sock_file):
-            os.unlink(self.sock_file)
+        #self.max_conns = max_conns
+        #if os.path.exists(self.sock_file):
+        #    os.unlink(self.sock_file)
         #self.portal_server.setblocking(0)
-        self.portal_server.bind(self.sock_file)
-        self.portal_server.listen(self.max_conns)
+        #self.portal_server.bind(self.sock_file)
+        #self.portal_server.listen(self.max_conns)
+
+    def get_connection(self,sockfile):
+        while True:
+            #if os.path.exists(sockfile):
+            if True:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                try:
+                    sock.connect(sockfile)
+                    return sock
+                except socket.error as e:
+                    logger.drs_log.debug("Connection Failed(%s), waiting..." %e)
+                    sleep(10)
+            else:
+                logger.drs_log.debug("Unix socket file %s not found. Waiting for sockets..." % sockfile)
+                sleep(10)
+
 
     def run(self):
-        x = 30
+        x = 1
         while x >= 1:
-            connection, address = self.portal_server.accept()
             stream_in = self.input.run()
             logger.drs_log.debug("read data: %d" % len(stream_in))
-            logger.drs_log.debug("new connection accepted")
-#            logger.drs_log.debug("remote addr:(%s,%d)" % connection.getpeername())
+            connection = self.get_connection(self.sock_file)
+            logger.drs_log.debug("connecting from (%s,%d)"  % connection.getsockname())
             client = multiprocessing.Process(target=self.exchange, args=(connection, stream_in))
             client.daemon = True
             client.start()
@@ -60,6 +76,6 @@ with router through input and output plugins.
             self.output.run(stream_out)
 
 
-p = Portal("plugins.input.file", "plugins.output.file", "filter", "/tmp/exchange.sock", 50)
-#p = Portal("plugins.input.file", "plugins.output.file", "filter", ("127.0.0.1", 6003), 50)
+#p = Portal("plugins.input.file", "plugins.output.file", "filter", "/tmp/exchange.sock", 50)
+p = Portal("plugins.input.file", "plugins.output.file", "filter", ("127.0.0.1", 6003), 50)
 p.run()
