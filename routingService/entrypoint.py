@@ -16,34 +16,56 @@ receives results from service, sends results to router.
 Portal interact with service using unix socket while interacting
 with router through input and output plugins.
 """
-    #def __init__(self, (plugin_input, input_args), (plugin_output, output_args), (plugin_exchange, exchange_args)):
-    def __init__(self, plugin_input, plugin_output, plugin_exchange):
-        """input: input plugin name to load
-            output: output plugin name to load
-            service_name: service name which Portal interact with
+    def __init__(self, tuple_input, tuple_output, tuple_exchange):
+        """:parameter: tuple_input - a tuple object contains plugin name
+        and arguments of that plugin. Plugin name is required and
+        arguments are optional.
+           :parameter: tuple_output - a tuple object contains plugin name
+        and arguments of that plugin. Plugin name is required and
+        arguments are optional.
+           :parameter: tuple_exchange - a tuple object contains plugin name
+        and arguments of that plugin. Plugin name is required and
+        arguments are optional.
         """
-        #self.plugin_input, self.input_args = (plugin_input, input_args)
-        #self.plugin_output, self.output_args = (plugin_output, output_args)
-        #self.plugin_exchange, self.exchange_args = (plugin_exchange, exchange_args)
+        assert isinstance(tuple_input, tuple)
+        assert isinstance(tuple_output, tuple)
+        assert isinstance(tuple_exchange, tuple)
+        self.plugin_input = tuple_input[0]
+        self.plugin_output = tuple_output[0]
+        self.plugin_exchange = tuple_exchange[0]
+        if len(tuple_input) is 1:
+            self.input_args = tuple_input[1]
+        if len(tuple_input) is 1:
+            self.output_args = tuple_output[1]
+        if len(tuple_input) is 1:
+            self.exchange_args = tuple_exchange[1]
+        # Get input, output and exchange classes.
+        # Instantiation will be performed after arguments are verified.
         self.manager = PluginManager()
-        #self.input = self.manager.get_plugin(self.plugin_input)()
-        #self.output = self.manager.get_plugin(self.plugin_output)()
-        #self.exchanger = self.manager.get_plugin(self.plugin_exchange)(sock="/tmp/exchange.sock", max_conns=5)
-        self.Input = self.manager.get_plugin(plugin_input)
-        self.output = self.manager.get_plugin(plugin_output)()
-        self.exchanger = self.manager.get_plugin(plugin_exchange)(sock="/tmp/exchange.sock", max_conns=5)
+        self.PluginInput = self.manager.get_plugin(self.plugin_input)
+        self.PluginOutput = self.manager.get_plugin(self.plugin_output)
+        self.PluginExchange = self.manager.get_plugin(self.plugin_exchange)
 
     def start(self):
-        filename = "/var/log/syslog"
-        input_args = json.loads(self.Input.__doc__)
-        # parse json documentation
-        #logger.drs_log.debug(input_args["options"][0]["option"])
-        self.input = self.Input(filename)
+        """start to work, transport data to services and get all result"""
+        # verify arguments first
+        self.input = self.Input()
         stream_in = self.input.run()
         logger.drs_log.debug(stream_in)
         #self.output.run(self.exchanger.run(self.input.run(filename, lines)))
         #self.output.run(stream_out)
         #logger.drs_log.debug("result %s\n" % stream_out)
+
+    def _verify_args(self):
+        """Verify all input arguments"""
+        json.loads(self.input_args)  # arguments received from agent
+        json.loads(self.PluginInput.__doc__)  # plugin's doc string
+
+        json.loads(self.output_args)  # arguments received from agent
+        json.loads(self.PluginOutput.__doc__)  # plugin's doc string
+
+        json.loads(self.exchange_args)  # arguments received from agent
+        json.loads(self.PluginExchange.__doc__)  # plugin's doc string
 
 if __name__ == "__main__":
     p = EntryPoint("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket")

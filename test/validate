@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-# validate plugin's doc string
 #
+# validate plugin's doc string
+# NOT DONE YET
 # Every plugin class must contains a JSON style doc string. It is mandatory
 # and plays an important role in the verification of input arguments.
 # 
@@ -32,7 +33,8 @@
 #    - name: the name of this plugin file, start with lower-case letters. 
 #            Any file which start with underline(_), will be omitted.
 #
-#    - author: the author of the this plugin, both name and email are preferred.
+#    - author: the author of the this plugin, 
+#              better be a name with an email address.
 #
 #    - version: version of this plugin
 #
@@ -42,8 +44,12 @@
 #               IMPORTANT: the arguments of method run is fixed. 
 #               Any customed argument should be passed to  __init__() .
 #
-option
-required
-default
-choices
-desc
+#        - option: the argument of __init__()  
+#
+#        - required: could be one of ["true", "false"]
+#
+#        - default: default value for the option.
+#
+#        - choices: a list of valid values of the option.
+#
+#        - desc: a description of the option
