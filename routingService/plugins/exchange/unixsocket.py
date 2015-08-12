@@ -8,6 +8,25 @@ from . import BaseExchange
 
 
 class UnixSocketExchange(BaseExchange):
+    """{"module": "exchange",
+        "name": "unixsocket",
+        "author": "Fuyuan.Chu <fuyuan.chu@emc.com>",
+        "version": "0.1",
+        "desc": "",
+        "options": [
+             {"option": "sock",
+              "required": false,
+              "default": "/tmp/exchange.sock",
+              "desc": "unix socket file which server will listen to"
+             },
+             {"option": "max_conns",
+              "required": false,
+              "default": 5,
+              "desc": "max number of queued connections"
+             }
+        ]
+    }
+    """
     def __init__(self, sock="/tmp/exchange.sock", max_conns=5):
         """exchange data with service"""
         super(UnixSocketExchange, self).__init__()
@@ -37,7 +56,7 @@ class UnixSocketExchange(BaseExchange):
             return stream_out
 
 
-class InteractWithService:
+class InteractWithService(object):
     def __init__(self, connection, data, buffer_size=1024):
         self.raw_data = data
         self.data_sent = False
