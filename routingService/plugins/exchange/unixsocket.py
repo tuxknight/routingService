@@ -2,7 +2,6 @@
 
 import socket
 import os
-import multiprocessing
 import logger
 from . import BaseExchange
 
@@ -32,7 +31,6 @@ class UnixSocketExchange(BaseExchange):
         super(UnixSocketExchange, self).__init__()
         logger.drs_log.debug("plugin: exchange/UnixSocketExchange")
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        #self.portal_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_file = sock
         self.max_conns = max_conns
         if os.path.exists(self.sock_file):
@@ -46,7 +44,9 @@ class UnixSocketExchange(BaseExchange):
         logger.drs_log.debug("new connection accepted")
         stream_out = ""
         try:
-            interactor = InteractWithService(connection, data, buffer_size=1024)
+            interactor = InteractWithService(connection,
+                                             data,
+                                             buffer_size=1024)
             stream_out = interactor.exchange()
         except socket.error as e:
             logger.drs_log.warn("socket error (%s)" % e.message)
@@ -86,6 +86,6 @@ class InteractWithService(object):
         self.start()
         return self.result
 
+
 def inject_plugin():
     return UnixSocketExchange
-

@@ -15,6 +15,7 @@ from entrypoint import EntryPoint
 zmq_context = zmq.Context()
 port = 6003
 socket = zmq_context.socket(zmq.REP)
+logger.drs_log.debug("Server listening")
 socket.bind("tcp://*:%d" % port)
 
 # receive data

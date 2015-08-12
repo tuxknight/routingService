@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import socket
-import os
-import select
-import multiprocessing
 from pluginLoader import PluginManager
 import logger
 
@@ -52,9 +48,9 @@ with router through input and output plugins.
         self.input = self.Input()
         stream_in = self.input.run()
         logger.drs_log.debug(stream_in)
-        #self.output.run(self.exchanger.run(self.input.run(filename, lines)))
-        #self.output.run(stream_out)
-        #logger.drs_log.debug("result %s\n" % stream_out)
+        # self.output.run(self.exchanger.run(self.input.run(filename, lines)))
+        # self.output.run(stream_out)
+        # logger.drs_log.debug("result %s\n" % stream_out)
 
     def _verify_args(self):
         """Verify all input arguments"""
@@ -68,5 +64,7 @@ with router through input and output plugins.
         json.loads(self.PluginExchange.__doc__)  # plugin's doc string
 
 if __name__ == "__main__":
-    p = EntryPoint("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket")
+    p = EntryPoint("plugins.input.file",
+                   "plugins.output.file",
+                   "plugins.exchange.unixsocket")
     p.start()
