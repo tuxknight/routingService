@@ -29,11 +29,11 @@ with router through input and output plugins.
         self.plugin_input = tuple_input[0]
         self.plugin_output = tuple_output[0]
         self.plugin_exchange = tuple_exchange[0]
-        if len(tuple_input) is 1:
+        if len(tuple_input) is 2:
             self.input_args = tuple_input[1]
-        if len(tuple_input) is 1:
+        if len(tuple_input) is 2:
             self.output_args = tuple_output[1]
-        if len(tuple_input) is 1:
+        if len(tuple_input) is 2:
             self.exchange_args = tuple_exchange[1]
         # Get input, output and exchange classes.
         # Instantiation will be performed after arguments are verified.
@@ -45,12 +45,12 @@ with router through input and output plugins.
     def start(self):
         """start to work, transport data to services and get all result"""
         # verify arguments first
-        self.input = self.Input()
-        stream_in = self.input.run()
-        logger.drs_log.debug(stream_in)
-        # self.output.run(self.exchanger.run(self.input.run(filename, lines)))
-        # self.output.run(stream_out)
-        # logger.drs_log.debug("result %s\n" % stream_out)
+        self.input_plugin = self.PluginInput(**self.input_args)
+        self.output = self.PluginOutput(**self.output_args)
+        self.exchanger = self.PluginExchange(**self.exchange_args)
+        stream_in = self.input_plugin.run()
+        # logger.drs_log.debug(stream_in)
+        self.output.run(self.exchanger.run(self.input_plugin.run()))
 
     def _verify_args(self):
         """Verify all input arguments"""
@@ -64,7 +64,4 @@ with router through input and output plugins.
         json.loads(self.PluginExchange.__doc__)  # plugin's doc string
 
 if __name__ == "__main__":
-    p = EntryPoint("plugins.input.file",
-                   "plugins.output.file",
-                   "plugins.exchange.unixsocket")
-    p.start()
+    pass

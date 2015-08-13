@@ -97,7 +97,7 @@ if __name__ == "__main__":
                     sock.connect(sockfile)
                     return sock
                 except socket.error as e:
-                    logger.drs_log.warn("Connection Failed(%s), waiting..." %e)
+                    logger.drs_log.warn("Connection Failed(%s), waiting..." % e)
                     sleep(10)
             else:
                 logger.drs_log.warn("Unix socket file %s not found. Waiting for sockets..." % sockfile)
@@ -108,7 +108,10 @@ if __name__ == "__main__":
     while True:
         conn = get_connection(sock_file)
         (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
-        size = conn.recv(1024)
+        try:
+            size = conn.recv(1024)
+        except socket.error as e: 
+            logger.drs_log.debug("Connection closed(%s)" % e)
         if size:
             service = FilterService(conn, client_pipe, size)
             worker = Worker(worker_pipe)
