@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import socket
-import os
-import multiprocessing
 import hashlib
+import multiprocessing
+import os
+import socket
 from time import sleep
+
 from routingService import logger
 
 
 class FilterService(multiprocessing.Process):
     def __init__(self, connection, pipe, data_size):
         super(FilterService, self).__init__()
-        logger.drs_log.debug("FilterService start")
+        logger.drs_log.info("FilterService start")
         self.raw_data = ""
         self.result = ""
         self.bufsize = 1024
@@ -69,7 +70,7 @@ class FilterService(multiprocessing.Process):
 class Worker(multiprocessing.Process):
     def __init__(self, pipe):
         super(Worker, self).__init__()
-        logger.drs_log.debug("Worker start")
+        logger.drs_log.info("Worker start")
         self.pipe = pipe
         self.md5sum = hashlib.md5()
 
@@ -77,7 +78,7 @@ class Worker(multiprocessing.Process):
         logger.drs_log.debug("worker receive from pipe")
         try:
             raw_data = self.pipe.recv()
-            logger.drs_log.debug("worker calculating...")
+            logger.drs_log.info("worker calculating...")
             self.md5sum.update(raw_data)
             self.pipe.send(self.md5sum.hexdigest())
         except EOFError as e:
@@ -96,10 +97,10 @@ if __name__ == "__main__":
                     sock.connect(sockfile)
                     return sock
                 except socket.error as e:
-                    logger.drs_log.debug("Connection Failed(%s), waiting..." %e)
+                    logger.drs_log.warn("Connection Failed(%s), waiting..." %e)
                     sleep(10)
             else:
-                logger.drs_log.debug("Unix socket file %s not found. Waiting for sockets..." % sockfile)
+                logger.drs_log.warn("Unix socket file %s not found. Waiting for sockets..." % sockfile)
                 sleep(10)
 
     sock_file = "/tmp/exchange.sock"
@@ -114,8 +115,8 @@ if __name__ == "__main__":
             service.daemon = True
             worker.daemon = True
             service.start()
-            logger.drs_log.debug("Service process id:%s" % service.ident)
+            logger.drs_log.info("Service process id:%s" % service.ident)
             worker.start()
-            logger.drs_log.debug("Worker process id:%s" % worker.ident)
+            logger.drs_log.info("Worker process id:%s" % worker.ident)
             worker.join()
             service.join()
