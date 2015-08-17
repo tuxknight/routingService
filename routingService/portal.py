@@ -19,7 +19,8 @@ class Portal(object):
         if self.host in ("0", "*"):
             self.host = "*"
         self.port = port
-        self.socket = self.zmq_context.socket(zmq.REP)
+        # self.socket = self.zmq_context.socket(zmq.REP)
+        self.socket = self.zmq_context.socket(zmq.PAIR)
         self.socket.bind("tcp://%s:%d" % (self.host, self.port))
         self.INPUT = "plugins.input"
         self.OUTPUT = "plugins.output"
@@ -29,6 +30,7 @@ class Portal(object):
 
     def worker(self):
         while True:
+            logger.drs_log.debug("listening...")
             message = self.socket.recv()
             logger.drs_log.debug("Received request: %s" % message)
             logger.drs_log.debug("Parsing message...")
@@ -39,7 +41,6 @@ class Portal(object):
                                      self.entrypoint_output,
                                      self.entrypoint_exchange)
             entry_point.start()
-            #self.socket.send(self.result)
 
     def _parse_json(self):
         if len(self.args_entrypoint) is not 3:

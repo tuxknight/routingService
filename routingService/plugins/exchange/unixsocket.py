@@ -53,6 +53,8 @@ class UnixSocketExchange(BaseExchange):
         finally:
             connection.shutdown(2)
             connection.close()
+            self.server.close()
+            logger.drs_log.debug("close connection")
             return stream_out
 
 

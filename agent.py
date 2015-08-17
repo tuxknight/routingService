@@ -17,22 +17,25 @@ class Agent(object):
         self.context = zmq.Context()
         self.host = host
         self.port = port
-        self.client = self.context.socket(zmq.REQ)
+        # self.client = self.context.socket(zmq.REQ)
+        self.client = self.context.socket(zmq.PAIR)
 
     def start(self):
         self.client.connect("tcp://%s:%d" % (self.host, self.port))
-        request = self._args_to_json()
-        logger.drs_log.debug("sending request: %s" % request)
-        self.client.send(request)
-        logger.drs_log.debug(self.client.recv())
+        file_list = ["/var/log/syslog", "/var/log/auth.log", "/var/log/upstart/docker.log"]
+        for f in file_list:
+            request = self._args_to_json(f)
+            logger.drs_log.debug("sending request: %s" % request)
+            self.client.send(request)
+            # logger.drs_log.debug(self.client.recv())
 
-
-    def _args_to_json(self):
+    def _args_to_json(self, filename):
         """
         Combines all arguments and return a JSON-style text.
         """
         # input
-        arg1 = {"filename": "/var/log/syslog"}
+        target_file = filename
+        arg1 = {"filename": target_file}
         arg2 = {"lines": 5}
         args = [arg1, arg2]
         _input = {}

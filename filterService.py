@@ -94,9 +94,11 @@ if __name__ == "__main__":
                 #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 try:
+                    logger.drs_log.debug("get connection")
                     sock.connect(sockfile)
                     return sock
                 except socket.error as e:
+                    #pass
                     logger.drs_log.warn("Connection Failed(%s), waiting..." % e)
                     sleep(10)
             else:
@@ -114,6 +116,7 @@ if __name__ == "__main__":
             logger.drs_log.debug("Connection closed(%s)" % e)
         if size:
             service = FilterService(conn, client_pipe, size)
+            size = ""  # reset size
             worker = Worker(worker_pipe)
             service.daemon = True
             worker.daemon = True
