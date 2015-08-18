@@ -14,6 +14,9 @@ from entrypoint import EntryPoint
 
 class Portal(object):
     def __init__(self, host="*", port=6003):
+        """running as a server to receive commands from agent
+        create entrypoint according to the arguments sent from agent
+        """
         self.zmq_context = zmq.Context()
         self.host = host
         if self.host in ("0", "*"):
@@ -43,6 +46,8 @@ class Portal(object):
             entry_point.start()
 
     def _parse_json(self):
+        """extract arguments and combine them as arguments of EntryPoint
+        """
         if len(self.args_entrypoint) is not 3:
             return -1
         # (plugin_name, plugin_arguments)

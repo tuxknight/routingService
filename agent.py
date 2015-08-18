@@ -14,6 +14,8 @@ from routingService import logger
 
 class Agent(object):
     def __init__(self, portal_host="127.0.0.1", portal_port=6003):
+        # Create a socket as a server to receive commands from controller node
+        # Also create a socket as a client to send command to Portal
         self.portal_context = zmq.Context()
         self.host = portal_host
         self.port = portal_port
@@ -70,4 +72,5 @@ class Agent(object):
 
 if __name__ == "__main__":
     agent = Agent(portal_host="portal")
+    # argument "portal" is the hostname of portal container.
     agent.start()
