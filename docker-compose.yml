@@ -5,7 +5,8 @@ agent:
   volumes:
     - ./:/opt
   log_driver: "syslog"
-  links: portal
+  links:
+    - "portal"
   command: "python /opt/agent.py"
 
 portal:
@@ -15,4 +16,4 @@ portal:
   volumes:
    - ./:/opt
   log_driver: "syslog"
-  command: "python /opt/routingService/portal.py"
+  command: "supervisord -c /opt/spvd.conf"
