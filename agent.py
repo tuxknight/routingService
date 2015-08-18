@@ -13,20 +13,25 @@ from routingService import logger
 
 
 class Agent(object):
-    def __init__(self, host="127.0.0.1", port=6003):
-        self.context = zmq.Context()
-        self.host = host
-        self.port = port
+    def __init__(self, portal_host="127.0.0.1", portal_port=6003):
+        self.portal_context = zmq.Context()
+        self.host = portal_host
+        self.port = portal_port
         # self.client = self.context.socket(zmq.REQ)
-        self.client = self.context.socket(zmq.PAIR)
+        self.portal_client = self.portal_context.socket(zmq.PAIR)
+
+        # receive controller message <demo>
+        self.server_context = zmq.Context()
+        self.server = self.server_context.socket(zmq.PAIR)
+        self.server.bind("tcp://*:6002")
+        logger.drs_log.debug("waiting for directives on port:6002")        
 
     def start(self):
-        self.client.connect("tcp://%s:%d" % (self.host, self.port))
-        file_list = ["/var/log/syslog", "/var/log/auth.log", "/var/log/upstart/docker.log"]
-        for f in file_list:
-            request = self._args_to_json(f)
-            logger.drs_log.debug("sending request: %s" % request)
-            self.client.send(request)
+        while True:
+            self.request = self.server.recv()
+            self.portal_client.connect("tcp://%s:%d" % (self.host, self.port))
+            logger.drs_log.debug("sending request: %s" % self.request)
+            self.portal_client.send(self.request)
             # logger.drs_log.debug(self.client.recv())
 
     def _args_to_json(self, filename):
@@ -64,5 +69,5 @@ class Agent(object):
         return json.dumps(message)
 
 if __name__ == "__main__":
-    agent = Agent()
+    agent = Agent(portal_host="portal")
     agent.start()

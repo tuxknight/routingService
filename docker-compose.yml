@@ -1,0 +1,18 @@
+agent:
+  image: pyzmq:latest
+  ports:
+    - 6002:6002
+  volumes:
+    - ./:/opt
+  log_driver: "syslog"
+  links: portal
+  command: "python /opt/agent.py"
+
+portal:
+  image: pyzmq:latest
+  ports:
+    - 6003:6003 
+  volumes:
+   - ./:/opt
+  log_driver: "syslog"
+  command: "python /opt/routingService/portal.py"

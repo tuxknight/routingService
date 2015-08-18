@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import datetime
+
 from . import BaseOutput
 import logger
 
@@ -30,8 +32,9 @@ class FileOutput(BaseOutput):
         self.write(self.filename, data)
 
     def write(self, filename, content):
-        with open(filename, "w") as f:
-            f.write(content)
+        with open(filename, "a") as f:
+            f.write(datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S") + " - " +
+            content + "\n")
 
 
 def inject_plugin():
