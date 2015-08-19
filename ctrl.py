@@ -9,7 +9,7 @@ class Ctrl(object):
         self.host = host
         self.port = port
         self.in_file = in_file
-        self.out_file = os.path.basename("/var/log/bootstrap.log").replace("log","out")
+        self.out_file = os.path.basename(self.in_file).replace("log","out")
         self.client_context = zmq.Context()
         self.client = self.client_context.socket(zmq.PAIR)
 
@@ -53,5 +53,5 @@ class Ctrl(object):
         return json.dumps(message)
 
 if __name__ == "__main__":
-    controller = Ctrl("127.0.0.1", 6002, "/var/log/bootstrap.log")
+    controller = Ctrl("127.0.0.1", 6002, "/var/log/drs.log")
     controller.send()
