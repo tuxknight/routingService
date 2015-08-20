@@ -33,6 +33,7 @@ class Agent(object):
             self.request = self.server.recv()
             # adjust for running in docker container
             # connect by hostname, not IP address
+            logger.drs_log.debug("try connecting to tcp://%s:%d" % (self.host, self.port))
             self.portal_client.connect("tcp://%s:%d" % (self.host, self.port))
             # use IP address if running on a host or VM
             # self.portal_client.connect("tcp://127.0.0.1:6003")
