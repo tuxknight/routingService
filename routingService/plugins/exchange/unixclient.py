@@ -6,9 +6,9 @@ import logger
 from . import BaseExchange
 
 
-class UnixSocketExchange(BaseExchange):
+class UnixClientExchange(BaseExchange):
     """{"module": "exchange",
-        "name": "unixsocket",
+        "name": "unixclient",
         "author": "Fuyuan.Chu <fuyuan.chu@emc.com>",
         "version": "0.1",
         "desc": "",
@@ -16,44 +16,32 @@ class UnixSocketExchange(BaseExchange):
              {"option": "sock",
               "required": false,
               "default": "/tmp/exchange.sock",
-              "desc": "unix socket file which server will listen to"
+              "desc": "unix socket file which client will connect to"
              },
-             {"option": "max_conns",
-              "required": false,
-              "default": 5,
-              "desc": "max number of queued connections"
-             }
         ]
     }
     """
-    def __init__(self, sock="/tmp/exchange.sock", max_conns=5):
+    def __init__(self, sock="/tmp/exchange.sock"):
         """exchange data with service"""
-        super(UnixSocketExchange, self).__init__()
-        logger.drs_log.debug("plugin: exchange/UnixSocketExchange")
-        self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        super(UnixClientExchange, self).__init__()
+        logger.drs_log.debug("plugin: exchange/UnixClientExchange")
+        self.client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock_file = sock
-        self.max_conns = max_conns
-        if os.path.exists(self.sock_file):
-            os.unlink(self.sock_file)
-        self.server.bind(self.sock_file)
-        self.server.listen(self.max_conns)
 
     def run(self, data):
-        connection, address = self.server.accept()
+        self.client.connect(self.sock_file)
         logger.drs_log.debug("input data size: %d" % len(data))
         logger.drs_log.debug("new connection accepted")
         stream_out = ""
         try:
-            interactor = InteractWithService(connection,
+            interactor = InteractWithService(self.client,
                                              data,
                                              buffer_size=1024)
             stream_out = interactor.exchange()
         except socket.error as e:
             logger.drs_log.warn("socket error (%s)" % e.message)
         finally:
-            connection.shutdown(2)
-            connection.close()
-            self.server.close()
+            self.client.close()
             logger.drs_log.debug("close connection")
             return stream_out
 
@@ -90,4 +78,4 @@ class InteractWithService(object):
 
 
 def inject_plugin():
-    return UnixSocketExchange
+    return UnixClientExchange

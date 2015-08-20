@@ -1,41 +1,85 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import socket
-import os
-import select
-import multiprocessing
-from pluginLoader import PluginManager
+import sys
+try:
+    import json
+    import zmq
+except ImportError as e:
+    logger.drs_log.fatal(e.message)
+    sys.exit(1)
+
 import logger
+from entrypoint import EntryPoint
 
-
-class Portal:
-    """Portal receives data from router, sends to service and then
-receives results from service, sends results to router.
-Portal interact with service using unix socket while interacting
-with router through input and output plugins.
-"""
-    def __init__(self, plugin_input, plugin_output, plugin_exchange):
-        """input: input plugin name to load
-            output: output plugin name to load
-            service_name: service name which Portal interact with
+class Portal(object):
+    def __init__(self, host="*", port=6003):
+        """running as a server to receive commands from agent
+        create entrypoint according to the arguments sent from agent
         """
-        self.manager = PluginManager()
-        self.input = self.manager.get_plugin(plugin_input)()
-        self.output = self.manager.get_plugin(plugin_output)()
-        self.exchanger = self.manager.get_plugin(plugin_exchange)(sock="/tmp/exchange.sock", max_conns=5)
+        self.zmq_context = zmq.Context()
+        self.host = host
+        if self.host in ("0", "*"):
+            self.host = "*"
+        self.port = port
+        # self.socket = self.zmq_context.socket(zmq.REP)
+        self.socket = self.zmq_context.socket(zmq.PAIR)
+        self.socket.bind("tcp://%s:%d" % (self.host, self.port))
+        self.INPUT = "plugins.input"
+        self.OUTPUT = "plugins.output"
+        self.EXCHANGE = "plugins.exchange"
+        logger.drs_log.debug("Server listening(tcp://%s:%d)" % (self.host, 
+                                                                self.port))
 
-    def start(self):
-        flist = ("/var/log/syslog", "/var/log/auth.log", "/var/log/kern.log")
-        loop = len(flist)
-        while loop>=1:
-            logger.drs_log.debug("loop %d" % loop)
-            stream_in = self.input.run(flist[loop-1], loop)
-            stream_out = self.exchanger.run(stream_in)
-            self.output.run(stream_out)
-            logger.drs_log.debug("result %s\n" % stream_out)
-            loop -= 1
+    def worker(self):
+        while True:
+            logger.drs_log.debug("listening...")
+            message = self.socket.recv()
+            logger.drs_log.debug("Received request: %s" % message)
+            logger.drs_log.debug("Parsing message...")
+            self.args_entrypoint = json.loads(message)
+            self._parse_json()
 
+            entry_point = EntryPoint(self.entrypoint_input,
+                                     self.entrypoint_output,
+                                     self.entrypoint_exchange)
+            entry_point.start()
 
-p = Portal("plugins.input.file", "plugins.output.file", "plugins.exchange.unixsocket")
-p.start()
+    def _parse_json(self):
+        """extract arguments and combine them as arguments of EntryPoint
+        """
+        if len(self.args_entrypoint) is not 3:
+            return -1
+        # (plugin_name, plugin_arguments)
+        self.entrypoint_input = (
+                            self.INPUT+"."+
+                            self.args_entrypoint["input"]["name"], 
+                            self._extract_args(
+                                self.args_entrypoint["input"]["arguments"]
+                                )
+                            )
+        self.entrypoint_output = (
+                             self.OUTPUT+"."+
+                             self.args_entrypoint["output"]["name"], 
+                             self._extract_args(
+                                 self.args_entrypoint["output"]["arguments"]
+                                 )
+                            )
+        self.entrypoint_exchange = (
+                               self.EXCHANGE+"."+
+                               self.args_entrypoint["exchange"]["name"], 
+                               self._extract_args(
+                                   self.args_entrypoint["exchange"]["arguments"]
+                                   )
+                            )
+
+    def _extract_args(self, arg_list):
+        """extract args from list and merge into one dict object"""
+        result = {}
+        for arg in arg_list:
+            result = dict(arg.items()+result.items())
+        return result
+
+if __name__ == "__main__":
+    portal = Portal()
+    portal.worker()

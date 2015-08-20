@@ -1,0 +1,35 @@
+{
+"input":
+    {
+        "name": "file",
+        "arguments": [
+            {
+                "filename": "/var/log/syslog"
+            },
+            {
+                "lines": 5
+            }
+        ]
+    },
+"exchange":
+    {
+        "name": "unixsocket",
+        "arguments": [
+            {
+                "sock": "/var/run/exchange.sock"
+            }
+        ]
+    },
+"output":
+    {
+        "name": "file",
+        "arguments": [
+            {
+                "filename": "/var/log/syslog"
+            },
+            {
+                "lines": 5
+            }
+        ]
+    }
+}

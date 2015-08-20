@@ -8,11 +8,10 @@ import hashlib
 from time import sleep
 from routingService import logger
 
-
 class FilterService(multiprocessing.Process):
     def __init__(self, connection, pipe, data_size):
         super(FilterService, self).__init__()
-        logger.drs_log.debug("FilterService start")
+        logger.drs_log.info("FilterService start")
         self.raw_data = ""
         self.result = ""
         self.bufsize = 1024
@@ -61,10 +60,9 @@ class FilterService(multiprocessing.Process):
             self._receive()
         except socket.error as e:
             self.status = -1
-            return 
+            return
         self._valve()
         self._send()
-
 
 class Worker(multiprocessing.Process):
     def __init__(self, pipe):
@@ -86,36 +84,31 @@ class Worker(multiprocessing.Process):
             self.pipe.close()
 
 if __name__ == "__main__":
-    def get_connection(sockfile):
-        while True:
-            if os.path.exists(sockfile):
-            #if True:
-                #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                try:
-                    sock.connect(sockfile)
-                    return sock
-                except socket.error as e:
-                    logger.drs_log.debug("Connection Failed(%s), waiting..." %e)
-                    sleep(10)
-            else:
-                logger.drs_log.debug("Unix socket file %s not found. Waiting for sockets..." % sockfile)
-                sleep(10)
-
     sock_file = "/tmp/exchange.sock"
-    # sock_file = ("127.0.0.1", 6003)
+    if os.path.exists(sock_file):
+        os.unlink(sock_file)
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.bind(sock_file)
+    sock.listen(5)
     while True:
-        conn = get_connection(sock_file)
-        (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
-        size = conn.recv(1024)
+        try:
+            logger.drs_log.debug("waiting for connections")
+            conn,address  = sock.accept()
+            size = conn.recv(1024)
+        except socket.error as e:
+            logger.drs_log.debug("Connection closed(%s)" % e)
+            conn.close()
+            sock.close()
         if size:
+            (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
             service = FilterService(conn, client_pipe, size)
+            size = ""  # reset size
             worker = Worker(worker_pipe)
             service.daemon = True
             worker.daemon = True
             service.start()
-            logger.drs_log.debug("Service process id:%s" % service.ident)
+            logger.drs_log.info("Service process id:%s" % service.ident)
             worker.start()
-            logger.drs_log.debug("Worker process id:%s" % worker.ident)
+            logger.drs_log.info("Worker process id:%s" % worker.ident)
             worker.join()
             service.join()

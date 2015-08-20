@@ -1,0 +1,26 @@
+agent:
+# This service sends controller messages
+# to portal service.
+  image: pyzmq:latest
+  ports:
+    - 6002:6002
+  volumes:
+    - ./:/opt
+  log_driver: "syslog"
+  links:
+    - "portal"
+  command: "python /opt/agent.py"
+
+portal:
+# This service contains a filterSerice 
+# and a portal service.
+
+# portal service receives commands from agent
+# and interacts with filterService.
+  image: pyzmq:latest
+  ports:
+    - 6003:6003 
+  volumes:
+   - ./:/opt
+  log_driver: "syslog"
+  command: "supervisord -c /opt/spvd.conf"

@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+#
+# validate plugin's doc string
+# NOT DONE YET
+# Every plugin class must contains a JSON style doc string. It is mandatory
+# and plays an important role in the verification of input arguments.
+# 
+# Here is an examplte
+#
+#  class FileIn(BaseInput):
+#      """{"module": "input",
+#          "name": "file",
+#          "author": "Fuyuan.Chu <fuyuan.chu@emc.com>",
+#          "version": "0.1",
+#          "desc": "read last lines of filename",
+#          "options": [
+#               {"option": "filename",
+#                "required": "True",
+#                "desc": "name of the file which be read"
+#               },
+#               {"option": "lines",
+#                "required": "False",
+#                "default": 5,
+#                "desc": "last lines should be read"
+#               }
+#          ]
+#      }
+#      """
+# There are totally 11 elements as shown below:
+#    - module: could be one of ["input", "output", "exchange"] , the name of 
+#              the directory which plugin file belongs to.
+#
+#    - name: the name of this plugin file, start with lower-case letters. 
+#            Any file which start with underline(_), will be omitted.
+#
+#    - author: the author of the this plugin, 
+#              better be a name with an email address.
+#
+#    - version: version of this plugin
+#
+#    - desc: a description of the plugin
+#
+#    - options: a list of arguments for __init__() . 
+#               IMPORTANT: the arguments of method run is fixed. 
+#               Any customed argument should be passed to  __init__() .
+#
+#        - option: the argument of __init__()  
+#
+#        - required: could be one of ["true", "false"]
+#
+#        - default: default value for the option.
+#
+#        - choices: a list of valid values of the option.
+#
+#        - desc: a description of the option

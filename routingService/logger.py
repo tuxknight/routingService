@@ -5,8 +5,9 @@ import logging
 import logging.handlers
 import sys
 
-LOG_FILE = "/tmp/drs.log"
-fmt = "%(name)s %(levelname)s %(asctime)s [ %(module)s(%(process)s):%(lineno)s:%(funcName)s ] %(message)s"
+LOG_FILE = "/var/log/drs.log"
+fmt = "%(name)s %(levelname)s %(asctime)s " \
+      "[ %(module)s(%(process)s):%(lineno)s:%(funcName)s ] %(message)s"
 formatter = logging.Formatter(fmt)
 rotation_handler = logging.handlers.RotatingFileHandler(LOG_FILE,
                                                         maxBytes=1024*1024,
@@ -23,3 +24,6 @@ drs_log = logging.getLogger("drs")
 drs_log.addHandler(rotation_handler)
 drs_log.setLevel(logging.DEBUG)
 drs_log.addHandler(std_handler)
+
+if __name__ == "__main__":
+    pass

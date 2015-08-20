@@ -10,7 +10,9 @@ class PluginManager(object):
         valid plugin files are end with .py and not start with _ """
         self.plugins_list = []
         self.plugins = {}
-        self.load_path = dict(input="plugins/input", output="plugins/output", exchange="plugins/exchange")
+        self.load_path = dict(input="plugins/input",
+                              output="plugins/output",
+                              exchange="plugins/exchange")
         self.install_plugins("input")
         self.install_plugins("output")
         self.install_plugins("exchange")
@@ -29,13 +31,13 @@ class PluginManager(object):
     def load_plugin(self, plugin_name):
         """get a instance of plugin_name if the plugin is available"""
         if plugin_name in self.plugins_list:
-            if not self.plugins.has_key(plugin_name):
+            if plugin_name not in self.plugins:
                 plugin = __import__(plugin_name, fromlist=[plugin_name])
                 self.plugins[plugin_name] = plugin.inject_plugin()
 
     def get_plugin(self, plugin_name):
         """return the instance of plugin_name if it is loaded"""
-        if self.plugins.has_key(plugin_name):
+        if plugin_name in self.plugins:
             return self.plugins[plugin_name]
         else:
             self.load_plugin(plugin_name)
