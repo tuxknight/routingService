@@ -31,9 +31,11 @@ class Agent(object):
     def start(self):
         while True:
             self.request = self.server.recv()
-            self.portal_client.connect("tcp://%s:%d" % (self.host, self.port))
+            # self.portal_client.connect("tcp://%s:%d" % (self.host, self.port))
+            self.portal_client.connect("tcp://127.0.0.1:6003")
             logger.drs_log.debug("sending request: %s" % self.request)
             self.portal_client.send(self.request)
+            logger.drs_log.debug("request finished.")
             # logger.drs_log.debug(self.client.recv())
 
     def _args_to_json(self, filename):
@@ -53,7 +55,7 @@ class Agent(object):
         arg1 = {"sock": "/tmp/exchange.sock"}
         args = [arg1]
         _exchange = {}
-        _exchange['name'] = "unixsocket"
+        _exchange['name'] = "unixclient"
         _exchange['arguments'] = args
         
         # output

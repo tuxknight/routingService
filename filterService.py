@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import hashlib
-import multiprocessing
-import os
 import socket
+import os
+import multiprocessing
+import hashlib
 from time import sleep
-
 from routingService import logger
-
 
 class FilterService(multiprocessing.Process):
     def __init__(self, connection, pipe, data_size):
@@ -62,15 +60,14 @@ class FilterService(multiprocessing.Process):
             self._receive()
         except socket.error as e:
             self.status = -1
-            return 
+            return
         self._valve()
         self._send()
-
 
 class Worker(multiprocessing.Process):
     def __init__(self, pipe):
         super(Worker, self).__init__()
-        logger.drs_log.info("Worker start")
+        logger.drs_log.debug("Worker start")
         self.pipe = pipe
         self.md5sum = hashlib.md5()
 
@@ -78,7 +75,7 @@ class Worker(multiprocessing.Process):
         logger.drs_log.debug("worker receive from pipe")
         try:
             raw_data = self.pipe.recv()
-            logger.drs_log.info("worker calculating...")
+            logger.drs_log.debug("worker calculating...")
             self.md5sum.update(raw_data)
             self.pipe.send(self.md5sum.hexdigest())
         except EOFError as e:
@@ -87,34 +84,23 @@ class Worker(multiprocessing.Process):
             self.pipe.close()
 
 if __name__ == "__main__":
-    def get_connection(sockfile):
-        while True:
-            if os.path.exists(sockfile):
-            #if True:
-                #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                try:
-                    logger.drs_log.debug("get connection")
-                    sock.connect(sockfile)
-                    return sock
-                except socket.error as e:
-                    #pass
-                    logger.drs_log.warn("Connection Failed(%s), waiting..." % e)
-                    sleep(10)
-            else:
-                logger.drs_log.warn("Unix socket file %s not found. Waiting for sockets..." % sockfile)
-                sleep(10)
-
     sock_file = "/tmp/exchange.sock"
-    # sock_file = ("127.0.0.1", 6003)
+    if os.path.exists(sock_file):
+        os.unlink(sock_file)
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.bind(sock_file)
+    sock.listen(5)
     while True:
-        conn = get_connection(sock_file)
-        (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
         try:
+            logger.drs_log.debug("waiting for connections")
+            conn,address  = sock.accept()
             size = conn.recv(1024)
-        except socket.error as e: 
+        except socket.error as e:
             logger.drs_log.debug("Connection closed(%s)" % e)
+            conn.close()
+            sock.close()
         if size:
+            (client_pipe, worker_pipe) = multiprocessing.Pipe(duplex=True)
             service = FilterService(conn, client_pipe, size)
             size = ""  # reset size
             worker = Worker(worker_pipe)

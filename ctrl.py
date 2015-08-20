@@ -35,7 +35,7 @@ class Ctrl(object):
         arg1 = {"sock": "/tmp/exchange.sock"}
         args = [arg1]
         _exchange = {}
-        _exchange['name'] = "unixsocket"
+        _exchange['name'] = "unixclient"
         _exchange['arguments'] = args
 
         # output
