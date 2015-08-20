@@ -31,8 +31,12 @@ class Agent(object):
     def start(self):
         while True:
             self.request = self.server.recv()
-            # self.portal_client.connect("tcp://%s:%d" % (self.host, self.port))
-            self.portal_client.connect("tcp://127.0.0.1:6003")
+            # adjust for running in docker container
+            # connect by hostname, not IP address
+            logger.drs_log.debug("try connecting to tcp://%s:%d" % (self.host, self.port))
+            self.portal_client.connect("tcp://%s:%d" % (self.host, self.port))
+            # use IP address if running on a host or VM
+            # self.portal_client.connect("tcp://127.0.0.1:6003")
             logger.drs_log.debug("sending request: %s" % self.request)
             self.portal_client.send(self.request)
             logger.drs_log.debug("request finished.")
@@ -73,6 +77,10 @@ class Agent(object):
         return json.dumps(message)
 
 if __name__ == "__main__":
+    # adjust for running in docker container
     agent = Agent(portal_host="portal")
+    # if running on a host or VM, portal_host could be IP address
+    # which set 127.0.0.1 as default
+    # agent = Agent(portal_host="portal")
     # argument "portal" is the hostname of portal container.
     agent.start()
