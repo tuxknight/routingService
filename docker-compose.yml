@@ -18,8 +18,8 @@ portal:
 # portal service receives commands from agent
 # and interacts with filterService.
   image: pyzmq:latest
-  ports:
-    - 6003:6003 
+#  ports:
+#    - 6003:6003 
   volumes:
    - ./:/opt
   log_driver: "syslog"

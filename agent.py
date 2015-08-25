@@ -19,7 +19,7 @@ class Agent(object):
         self.portal_context = zmq.Context()
         self.host = portal_host
         self.port = portal_port
-        # self.client = self.context.socket(zmq.REQ)
+        # self.portal_client = self.portal_context.socket(zmq.REQ)
         self.portal_client = self.portal_context.socket(zmq.PAIR)
 
         # receive controller message <demo>
@@ -40,7 +40,7 @@ class Agent(object):
             logger.drs_log.debug("sending request: %s" % self.request)
             self.portal_client.send(self.request)
             logger.drs_log.debug("request finished.")
-            # logger.drs_log.debug(self.client.recv())
+            logger.drs_log.debug(self.portal_client.recv())
 
     def _args_to_json(self, filename):
         """

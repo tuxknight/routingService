@@ -33,13 +33,14 @@ class Portal(object):
 
     def worker(self):
         while True:
-            logger.drs_log.debug("listening...")
             message = self.socket.recv()
+            self.socket.send("DONE")
             logger.drs_log.debug("Received request: %s" % message)
             logger.drs_log.debug("Parsing message...")
             self.args_entrypoint = json.loads(message)
             self._parse_json()
 
+            logger.drs_log.debug("Create EntryPoint")
             entry_point = EntryPoint(self.entrypoint_input,
                                      self.entrypoint_output,
                                      self.entrypoint_exchange)

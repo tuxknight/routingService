@@ -11,7 +11,6 @@ from routingService import logger
 class FilterService(multiprocessing.Process):
     def __init__(self, connection, pipe, data_size):
         super(FilterService, self).__init__()
-        logger.drs_log.info("FilterService start")
         self.raw_data = ""
         self.result = ""
         self.bufsize = 1024
@@ -21,9 +20,9 @@ class FilterService(multiprocessing.Process):
         self.size = int(data_size)
 
     def _receive(self):
-        logger.drs_log.debug("%s" % self.sock.getsockname())
+        # logger.drs_log.debug("%s" % self.sock.getsockname())
         #size = self.sock.recv(1024)
-        logger.drs_log.debug("raw data size: %s" % self.size)
+        logger.drs_log.debug("received raw data size: %s" % self.size)
         self.sock.sendall("start")
         for x in range(self.size//self.bufsize):
             """if size little than self.bufsize, this will not run"""
@@ -34,15 +33,13 @@ class FilterService(multiprocessing.Process):
 
     def _valve(self):
         if self.raw_data:
-            logger.drs_log.debug("write to pipe")
             self.pipe.send(self.raw_data)
             try:
-                logger.drs_log.debug("try recv from pipe")
+                logger.drs_log.debug("working...")
                 self.result = self.pipe.recv()
             except EOFError as e:
                 logger.drs_log.warn("Pipe error(%s)" % e.message)
             finally:
-                logger.drs_log.debug("Pipe close")
                 self.pipe.close()
 
     def _send(self):
@@ -67,15 +64,12 @@ class FilterService(multiprocessing.Process):
 class Worker(multiprocessing.Process):
     def __init__(self, pipe):
         super(Worker, self).__init__()
-        logger.drs_log.debug("Worker start")
         self.pipe = pipe
         self.md5sum = hashlib.md5()
 
     def run(self):
-        logger.drs_log.debug("worker receive from pipe")
         try:
             raw_data = self.pipe.recv()
-            logger.drs_log.debug("worker calculating...")
             self.md5sum.update(raw_data)
             self.pipe.send(self.md5sum.hexdigest())
         except EOFError as e:
@@ -92,7 +86,7 @@ if __name__ == "__main__":
     sock.listen(5)
     while True:
         try:
-            logger.drs_log.debug("waiting for connections")
+            logger.drs_log.debug("waiting for new connections")
             conn,address  = sock.accept()
             size = conn.recv(1024)
         except socket.error as e:
@@ -107,8 +101,6 @@ if __name__ == "__main__":
             service.daemon = True
             worker.daemon = True
             service.start()
-            logger.drs_log.info("Service process id:%s" % service.ident)
             worker.start()
-            logger.drs_log.info("Worker process id:%s" % worker.ident)
             worker.join()
             service.join()

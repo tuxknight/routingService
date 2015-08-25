@@ -48,8 +48,7 @@ with router through input and output plugins.
         self.input_plugin = self.PluginInput(**self.input_args)
         self.output = self.PluginOutput(**self.output_args)
         self.exchanger = self.PluginExchange(**self.exchange_args)
-        stream_in = self.input_plugin.run()
-        # logger.drs_log.debug(stream_in)
+        # stream_in = self.input_plugin.run()
         self.output.run(self.exchanger.run(self.input_plugin.run()))
 
     def _verify_args(self):

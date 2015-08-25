@@ -31,7 +31,7 @@ class UnixClientExchange(BaseExchange):
     def run(self, data):
         self.client.connect(self.sock_file)
         logger.drs_log.debug("input data size: %d" % len(data))
-        logger.drs_log.debug("new connection accepted")
+        logger.drs_log.debug("new connection established")
         stream_out = ""
         try:
             interactor = InteractWithService(self.client,

@@ -36,6 +36,7 @@ class FileIn(BaseInput):
     def run(self):
         """deal with input type: file
         return data"""
+        logger.drs_log.debug("plugin:input/file: - reading file %s" % self.filename)
         return self.read(self.filename, self.lines)
 
     def read(self, filename, lines):
