@@ -34,7 +34,6 @@ class Portal(object):
     def worker(self):
         while True:
             message = self.socket.recv()
-            self.socket.send("DONE")
             logger.drs_log.debug("Received request: %s" % message)
             logger.drs_log.debug("Parsing message...")
             self.args_entrypoint = json.loads(message)

@@ -40,41 +40,40 @@ class Agent(object):
             logger.drs_log.debug("sending request: %s" % self.request)
             self.portal_client.send(self.request)
             logger.drs_log.debug("request finished.")
-            logger.drs_log.debug(self.portal_client.recv())
 
-    def _args_to_json(self, filename):
-        """
-        Combines all arguments and return a JSON-style text.
-        """
-        # input
-        target_file = filename
-        arg1 = {"filename": target_file}
-        arg2 = {"lines": 5}
-        args = [arg1, arg2]
-        _input = {}
-        _input['name'] = "file"
-        _input['arguments'] = args
-        
-        # exchange
-        arg1 = {"sock": "/tmp/exchange.sock"}
-        args = [arg1]
-        _exchange = {}
-        _exchange['name'] = "unixclient"
-        _exchange['arguments'] = args
-        
-        # output
-        arg1 = {"filename": "output.txt"}
-        args = [arg1]
-        _output = {}
-        _output['name'] = "file"
-        _output['arguments'] = args
-        
-        message = {}
-        message['input'] = _input
-        message['exchange'] = _exchange
-        message['output'] = _output
-    
-        return json.dumps(message)
+#    def _args_to_json(self, filename):
+#        """
+#        Combines all arguments and return a JSON-style text.
+#        """
+#        # input
+#        target_file = filename
+#        arg1 = {"filename": target_file}
+#        arg2 = {"lines": 5}
+#        args = [arg1, arg2]
+#        _input = {}
+#        _input['name'] = "file"
+#        _input['arguments'] = args
+#        
+#        # exchange
+#        arg1 = {"sock": "/tmp/exchange.sock"}
+#        args = [arg1]
+#        _exchange = {}
+#        _exchange['name'] = "unixclient"
+#        _exchange['arguments'] = args
+#        
+#        # output
+#        arg1 = {"filename": "output.txt"}
+#        args = [arg1]
+#        _output = {}
+#        _output['name'] = "file"
+#        _output['arguments'] = args
+#        
+#        message = {}
+#        message['input'] = _input
+#        message['exchange'] = _exchange
+#        message['output'] = _output
+#    
+#        return json.dumps(message)
 
 if __name__ == "__main__":
     # adjust for running in docker container
